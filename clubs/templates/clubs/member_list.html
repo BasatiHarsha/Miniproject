@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">{{ club.name }} - Members</h1>
+    <div class="row g-4">
+        {% for member in members %}
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ member.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ member.role }}</h6>
+                    <p class="card-text">
+                        <small class="text-muted">Joined: {{ member.joined_date|date:"F j, Y" }}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p>No members found for this club.</p>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="mt-4">
+        <a href="{% url 'club_detail' club.id %}" class="btn btn-primary">Back to Club</a>
+    </div>
+</div>
+{% endblock %}

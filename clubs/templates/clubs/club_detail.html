@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>{{ club.name }}</h1>                {% if user.is_authenticated %}
+                    {% if membership %}
+                        {% if membership.status == 'approved' %}
+                            {% if user.userprofile.can_manage_club or membership.is_faculty_advisor %}
+                                <a href="{% url 'club_manage' club.id %}" class="btn btn-success">
+                                    <i class="fas fa-cog me-1"></i>Manage Club
+                                </a>
+                            {% endif %}
+                            <form method="post" action="{% url 'leave_club' club.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Leave Club
+                                </button>
+                            </form>
+                        {% elif membership.status == 'pending' %}
+                            <button class="btn btn-warning" disabled>
+                                <i class="fas fa-clock me-1"></i>Membership Pending
+                            </button>
+                        {% else %}
+                            <form method="post" action="{% url 'join_club' club.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus me-1"></i>Join Club
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <form method="post" action="{% url 'join_club' club.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-1"></i>Join Club
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Login to Join</a>
+                {% endif %}
+            </div>
+            {% if club.image %}
+                <img src="{{ club.image.url }}" class="img-fluid rounded mb-4" alt="{{ club.name }}">
+            {% endif %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">About the Club</h5>
+                    <p class="card-text">{{ club.description }}</p>
+                </div>
+            </div>
+            
+            <h2 class="mb-3">Upcoming Events</h2>
+            {% for event in club.events.all %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ event.date|date:"F j, Y" }}</h6>
+                    <p class="card-text">{{ event.description|truncatewords:50 }}</p>
+                    <a href="{% url 'event_detail' event.id %}" class="btn btn-primary btn-sm">Event Details</a>
+                </div>
+            </div>
+            {% empty %}
+            <p>No upcoming events.</p>
+            {% endfor %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Club Members</h5>
+                    <a href="{% url 'member_list' club.id %}" class="btn btn-outline-primary mb-3">View All Members</a>
+                    {% for member in club.members.all|slice:":5" %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div>
+                            <h6 class="mb-0">{{ member.name }}</h6>
+                            <small class="text-muted">{{ member.role }}</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No members yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

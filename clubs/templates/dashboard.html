@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- User Profile Summary -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    {% if user.userprofile.avatar %}
+                        <img src="{{ user.userprofile.avatar.url }}" alt="{{ user.get_full_name }}" 
+                             class="rounded-circle mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                        <div class="user-avatar mx-auto mb-3">
+                            {{ user.get_full_name|make_list|first|upper }}
+                        </div>
+                    {% endif %}
+                    <h5 class="card-title mb-1">{{ user.get_full_name }}</h5>
+                    <p class="text-muted">{{ user.userprofile.department }}</p>
+                    <p class="card-text">{{ user.userprofile.bio|truncatewords:30 }}</p>
+                    <a href="{% url 'profile' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i>Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <!-- Registered Events -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Your Upcoming Events</h5>
+                </div>
+                <div class="card-body">
+                    {% if registered_events %}
+                        {% for event in registered_events %}
+                            <div class="registered-event p-3 mb-3 rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">{{ event.title }}</h6>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-calendar-alt me-2"></i>{{ event.date|date:"F j, Y, g:i a" }}
+                                        </p>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-map-marker-alt me-2"></i>{{ event.location }}
+                                        </p>
+                                    </div>
+                                    <div class="event-date">
+                                        <div class="day">{{ event.date|date:"d" }}</div>
+                                        <div class="month">{{ event.date|date:"M" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <img src="{% static 'img/no-events.svg' %}" alt="No events" style="width: 150px;" class="mb-3">
+                            <h6>No Upcoming Events</h6>
+                            <p class="text-muted">You haven't registered for any events yet.</p>
+                            <a href="{% url 'event_list' %}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-1"></i>Browse Events
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Your Clubs -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Your Clubs</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_clubs %}
+                        <div class="row g-3">
+                            {% for club in user_clubs %}
+                                <div class="col-md-6">
+                                    <div class="joined-club p-3 rounded">
+                                        <div class="d-flex align-items-center">
+                                            {% if club.thumbnail %}
+                                                <img src="{{ club.thumbnail.url }}" alt="{{ club.name }}" 
+                                                     class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-1">{{ club.name }}</h6>
+                                                <p class="text-muted mb-0">
+                                                    <i class="fas fa-users me-1"></i>{{ club.get_registered_count }} members
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <img src="{% static 'img/no-clubs.svg' %}" alt="No clubs" style="width: 150px;" class="mb-3">
+                            <h6>No Clubs Joined</h6>
+                            <p class="text-muted">You haven't joined any clubs yet.</p>
+                            <a href="{% url 'club_list' %}" class="btn btn-primary">
+                                <i class="fas fa-users me-1"></i>Browse Clubs
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            {% if recommended_clubs or recommended_events %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Recommended for You</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if recommended_clubs %}
+                            <h6 class="mb-3">Clubs You Might Like</h6>
+                            <div class="row g-3 mb-4">
+                                {% for club in recommended_clubs %}
+                                    <div class="col-md-6">
+                                        <div class="card h-100">
+                                            {% if club.thumbnail %}
+                                                <img src="{{ club.thumbnail.url }}" class="card-img-top" alt="{{ club.name }}">
+                                            {% endif %}
+                                            <div class="card-body">
+                                                <h6 class="card-title">{{ club.name }}</h6>
+                                                <p class="card-text small">{{ club.description|truncatewords:20 }}</p>
+                                                <a href="{% url 'club_detail' club.id %}" class="btn btn-sm btn-outline-primary">
+                                                    Learn More
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {% if recommended_events %}
+                            <h6 class="mb-3">Events You Might Like</h6>
+                            <div class="row g-3">
+                                {% for event in recommended_events %}
+                                    <div class="col-md-6">
+                                        <div class="card h-100">
+                                            {% if event.thumbnail %}
+                                                <img src="{{ event.thumbnail.url }}" class="card-img-top" alt="{{ event.title }}">
+                                            {% endif %}
+                                            <div class="card-body">
+                                                <h6 class="card-title">{{ event.title }}</h6>
+                                                <p class="text-muted mb-2">
+                                                    <i class="fas fa-calendar-alt me-1"></i>{{ event.date|date:"F j, Y" }}
+                                                </p>
+                                                <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-outline-primary">
+                                                    View Details
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

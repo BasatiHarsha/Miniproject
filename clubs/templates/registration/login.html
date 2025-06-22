@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Login</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Your username and password didn't match. Please try again.
+                        </div>
+                    {% endif %}
+
+                    <!-- Role selection tabs -->
+                    <ul class="nav nav-pills mb-4 nav-justified" id="roleTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="student-tab" data-bs-toggle="pill" data-bs-target="#student" 
+                                    type="button" role="tab" aria-selected="true">
+                                <i class="fas fa-user-graduate me-2"></i>Student
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="faculty-tab" data-bs-toggle="pill" data-bs-target="#faculty" 
+                                    type="button" role="tab" aria-selected="false">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Faculty
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="admin-tab" data-bs-toggle="pill" data-bs-target="#admin" 
+                                    type="button" role="tab" aria-selected="false">
+                                <i class="fas fa-user-shield me-2"></i>Admin
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Role-specific content -->
+                    <div class="tab-content" id="roleTabContent">
+                        <!-- Student Login -->
+                        <div class="tab-pane fade show active" id="student" role="tabpanel">
+                            <form method="post" action="{% url 'login' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="role" value="student">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Student ID / Username</label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" name="password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login as Student
+                                </button>
+                            </form>
+                            <div class="mt-3 text-center">
+                                <p>New student? <a href="{% url 'register' %}?role=student">Register here</a></p>
+                            </div>
+                        </div>
+
+                        <!-- Faculty Login -->
+                        <div class="tab-pane fade" id="faculty" role="tabpanel">
+                            <form method="post" action="{% url 'login' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="role" value="faculty">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Faculty ID / Username</label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" name="password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login as Faculty
+                                </button>
+                            </form>
+                            <div class="mt-3 text-center">
+                                <p>Contact admin for faculty registration</p>
+                            </div>
+                        </div>
+
+                        <!-- Admin Login -->
+                        <div class="tab-pane fade" id="admin" role="tabpanel">
+                            <form method="post" action="{% url 'login' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="role" value="admin">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Admin Username</label>
+                                    <input type="text" name="username" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" name="password" class="form-control" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login as Admin
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Profile Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" class="rounded-circle mb-3" alt="{{ user.username }}'s avatar"
+                             style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <div class="avatar-placeholder mb-3 rounded-circle bg-light d-flex align-items-center justify-content-center"
+                             style="width: 150px; height: 150px; margin: 0 auto;">
+                            <i class="fas fa-user fa-4x text-secondary"></i>
+                        </div>
+                    {% endif %}
+                    <h3 class="mb-0">{{ user.get_full_name }}</h3>
+                    <p class="text-muted mb-3">@{{ user.username }}</p>
+                    {% if profile.department %}
+                        <p class="mb-3"><i class="fas fa-graduation-cap me-2"></i>{{ profile.department }}</p>
+                    {% endif %}
+                    
+                    <div class="stats d-flex justify-content-around mb-3">
+                        <div class="stat-item">
+                            <h4 class="mb-0">{{ clubs_count }}</h4>
+                            <small class="text-muted">Clubs</small>
+                        </div>
+                        <div class="stat-item">
+                            <h4 class="mb-0">{{ events_count }}</h4>
+                            <small class="text-muted">Events</small>
+                        </div>
+                    </div>
+                    
+                    {% if profile.bio %}
+                        <div class="bio text-start p-3 bg-light rounded">
+                            <h6 class="mb-2">About Me</h6>
+                            <p class="mb-0 small">{{ profile.bio }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Upcoming Events Card -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Upcoming Events</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        {% for event in upcoming_events %}
+                            <div class="event-item mb-3 p-3 border rounded">
+                                <h6 class="mb-1">{{ event.title }}</h6>
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-calendar-alt me-1"></i>
+                                    {{ event.date|date:"M d, Y" }}
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ event.date|date:"g:i A" }}
+                                </small>
+                                <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                                    View Details
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No upcoming events</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="col-md-8">
+            <!-- Edit Profile Form -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Profile Picture</label>
+                            {{ profile_form.avatar }}
+                            {% if profile_form.avatar.errors %}
+                                <div class="invalid-feedback d-block">{{ profile_form.avatar.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Department</label>
+                            {{ profile_form.department }}
+                            {% if profile_form.department.errors %}
+                                <div class="invalid-feedback d-block">{{ profile_form.department.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Bio</label>
+                            {{ profile_form.bio }}
+                            {% if profile_form.bio.errors %}
+                                <div class="invalid-feedback d-block">{{ profile_form.bio.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- User's Clubs -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">My Clubs</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_clubs %}
+                        <div class="row g-3">
+                            {% for club in user_clubs %}
+                                <div class="col-md-6">
+                                    <div class="club-card p-3 border rounded">
+                                        <h6 class="mb-2">{{ club.name }}</h6>
+                                        <p class="text-muted small mb-2">{{ club.description|truncatewords:15 }}</p>
+                                        <a href="{% url 'club_detail' club.id %}" class="btn btn-sm btn-outline-primary">
+                                            View Club
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">You haven't joined any clubs yet.</p>
+                        <a href="{% url 'club_list' %}" class="btn btn-primary mt-3">Browse Clubs</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.club-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.club-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.event-item {
+    transition: transform 0.2s;
+}
+.event-item:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

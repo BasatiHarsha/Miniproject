@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Club Management Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Club Management</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#membership" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                        <i class="fas fa-users me-2"></i>Membership Requests
+                        {% if pending_memberships %}
+                            <span class="badge bg-danger float-end">{{ pending_memberships.count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="#events" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-calendar-alt me-2"></i>Events
+                        {% if pending_events %}
+                            <span class="badge bg-danger float-end">{{ pending_events.count }}</span>
+                        {% endif %}
+                    </a>
+                    <a href="#members" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-user-friends me-2"></i>Members
+                    </a>
+                    <a href="#settings" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-cog me-2"></i>Club Settings
+                    </a>
+                </div>
+            </div>
+
+            {% if user.userprofile.is_faculty or user.userprofile.is_admin %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Faculty Tools</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#leaders" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-user-tie me-2"></i>Manage Leaders
+                    </a>
+                    {% if user.userprofile.is_admin %}
+                    <a href="#delete" class="list-group-item list-group-item-action text-danger" data-bs-toggle="list">
+                        <i class="fas fa-trash-alt me-2"></i>Delete Club
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Content Area -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Membership Requests -->
+                <div class="tab-pane fade show active" id="membership">
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Pending Membership Requests</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if pending_memberships %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Department</th>
+                                            <th>Requested</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for membership in pending_memberships %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if membership.user.userprofile.avatar %}
+                                                    <img src="{{ membership.user.userprofile.avatar.url }}" class="rounded-circle me-2" width="32" height="32">
+                                                    {% endif %}
+                                                    {{ membership.user.get_full_name }}
+                                                </div>
+                                            </td>
+                                            <td>{{ membership.user.userprofile.department }}</td>
+                                            <td>{{ membership.joined_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                <form method="post" action="{% url 'approve_member' club.id membership.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Approve
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{% url 'reject_member' club.id membership.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-times me-1"></i>Reject
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">No pending membership requests.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events Management -->
+                <div class="tab-pane fade" id="events">
+                    <div class="card shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Events Management</h5>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createEventModal">
+                                <i class="fas fa-plus me-1"></i>Create Event
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            {% if events %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Event</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for event in events %}
+                                        <tr>
+                                            <td>{{ event.title }}</td>
+                                            <td>{{ event.date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if event.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending Approval</span>
+                                                {% elif event.status == 'approved' %}
+                                                <span class="badge bg-success">Approved</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if event.status == 'pending' and user.userprofile.is_faculty_advisor %}
+                                                <form method="post" action="{% url 'approve_event' club.id event.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="fas fa-check me-1"></i>Approve
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                                <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye me-1"></i>View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">No events found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members List -->
+                <div class="tab-pane fade" id="members">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Club Members</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if members %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Member</th>
+                                            <th>Role</th>
+                                            <th>Joined</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for membership in members %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if membership.user.userprofile.avatar %}
+                                                    <img src="{{ membership.user.userprofile.avatar.url }}" class="rounded-circle me-2" width="32" height="32">
+                                                    {% endif %}
+                                                    {{ membership.user.get_full_name }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if membership.role == 'faculty_advisor' %}
+                                                <span class="badge bg-primary">Faculty Advisor</span>
+                                                {% elif membership.role == 'leader' %}
+                                                <span class="badge bg-success">Club Leader</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Member</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ membership.joined_date|date:"M d, Y" }}</td>
+                                            <td>
+                                                {% if user.userprofile.can_manage_club %}
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                        Actions
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        {% if user.userprofile.is_faculty_advisor %}
+                                                        <li>
+                                                            <form method="post" action="{% url 'make_leader' club.id membership.id %}">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="dropdown-item">Make Leader</button>
+                                                            </form>
+                                                        </li>
+                                                        {% endif %}
+                                                        <li>
+                                                            <form method="post" action="{% url 'remove_member' club.id membership.id %}">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="dropdown-item text-danger">Remove Member</button>
+                                                            </form>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted mb-0">No members found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Club Settings -->
+                <div class="tab-pane fade" id="settings">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Club Settings</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'update_club' club.id %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {{ club_form }}
+                                <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Faculty Tools -->
+                {% if user.userprofile.is_faculty or user.userprofile.is_admin %}
+                <div class="tab-pane fade" id="leaders">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Manage Club Leaders</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="{% url 'assign_leader' club.id %}">
+                                {% csrf_token %}
+                                {{ leader_form }}
+                                <button type="submit" class="btn btn-primary mt-3">Assign Leader</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Delete Club (Admin Only) -->
+                {% if user.userprofile.is_admin %}
+                <div class="tab-pane fade" id="delete">
+                    <div class="card shadow-sm border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Delete Club</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-danger">
+                                <h5 class="alert-heading">Warning!</h5>
+                                <p>Deleting a club will permanently remove all associated data, including:</p>
+                                <ul>
+                                    <li>All member records</li>
+                                    <li>All events</li>
+                                    <li>All event registrations</li>
+                                </ul>
+                                <p class="mb-0">This action cannot be undone.</p>
+                            </div>
+                            <form method="post" action="{% url 'delete_club' club.id %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="confirm" class="form-label">Type "DELETE" to confirm</label>
+                                    <input type="text" class="form-control" id="confirm" name="confirm" required>
+                                </div>
+                                <button type="submit" class="btn btn-danger">Delete Club</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Event Modal -->
+<div class="modal fade" id="createEventModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'create_event' club.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {{ event_form }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

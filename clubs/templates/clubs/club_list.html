@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4 text-center">Our Clubs</h1>
+    <div class="row g-4">
+        {% for club in clubs %}
+        <div class="col-md-4">
+            <div class="card h-100">
+                {% if club.image %}
+                    <img src="{{ club.image.url }}" class="card-img-top" alt="{{ club.name }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ club.name }}</h5>
+                    <p class="card-text text-muted mb-2">{{ club.category|title }}</p>
+                    <p class="card-text">{{ club.description|truncatewords:30 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'club_detail' club.id %}" class="btn btn-outline-primary">Learn More</a>
+                        {% if user.is_authenticated %}
+                            {% if user in club.members.all %}
+                                <span class="badge bg-success">Member</span>
+                            {% else %}
+                                <form method="post" action="{% url 'join_club' club.id %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary">Join</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>{{ club.members.count }} member{{ club.members.count|pluralize }}</small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <img src="{% static 'img/no-clubs.svg' %}" alt="No clubs" class="img-fluid mb-3" style="max-width: 200px;">
+            <p class="text-muted">No clubs available at the moment.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <div class="container text-center">
+            <h1 class="hero-title mb-4">Welcome to College Hub</h1>
+            <p class="hero-subtitle">Discover exciting clubs and events at your college!</p>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <form action="{% url 'club_list' %}" method="get">
+                    <div class="input-group">
+                        <input type="text" class="form-control" 
+                               placeholder="Search clubs & events..." name="q">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="hero-buttons">
+                <a href="{% url 'club_list' %}" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-users me-2"></i>Browse Clubs
+                </a>
+                <a href="{% url 'event_list' %}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-calendar-alt me-2"></i>View Events
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center display-5 mb-5">Connect. Engage. Excel.</h2>
+        
+        <div class="row g-4">
+            <!-- Join Clubs -->
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-users fa-3x text-primary"></i>
+                    </div>
+                    <h3>Join Clubs</h3>
+                    <p class="text-muted">Find and join clubs that match your interests and passions.</p>
+                </div>
+            </div>
+            
+            <!-- Attend Events -->
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                    </div>
+                    <h3>Attend Events</h3>
+                    <p class="text-muted">Participate in exciting events and activities on campus.</p>
+                </div>
+            </div>
+            
+            <!-- Build Skills -->
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-star fa-3x text-primary"></i>
+                    </div>
+                    <h3>Build Skills</h3>
+                    <p class="text-muted">Develop leadership skills and make lasting connections.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

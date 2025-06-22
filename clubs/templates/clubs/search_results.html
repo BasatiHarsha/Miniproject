@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4">
+        <h2>Search Results for "{{ query }}"</h2>
+        <p class="text-muted">Found {{ clubs.count }} clubs and {{ events.count }} events</p>
+    </div>
+
+    <!-- Clubs Section -->
+    {% if clubs %}
+    <section class="mb-5">
+        <h3 class="mb-4">Clubs</h3>
+        <div class="row g-4">
+            {% for club in clubs %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if club.thumbnail %}
+                        <img src="{{ club.thumbnail.url }}" class="card-img-top" alt="{{ club.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ club.name }}</h5>
+                        <p class="card-text text-muted">{{ club.description|truncatewords:20 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary">{{ club.category }}</span>
+                            <a href="{% url 'club_detail' club.id %}" class="btn btn-outline-primary btn-sm">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Events Section -->
+    {% if events %}
+    <section>
+        <h3 class="mb-4">Events</h3>
+        <div class="row g-4">
+            {% for event in events %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if event.thumbnail %}
+                        <img src="{{ event.thumbnail.url }}" class="card-img-top" alt="{{ event.title }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ event.title }}</h5>
+                        <p class="card-text text-muted">{{ event.description|truncatewords:20 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar-alt me-1"></i>
+                                {{ event.date|date:"M d, Y" }}
+                            </small>
+                            <a href="{% url 'event_detail' event.id %}" class="btn btn-outline-primary btn-sm">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if not clubs and not events %}
+    <div class="text-center py-5">
+        <img src="{% static 'img/no-results.svg' %}" alt="No results found" class="mb-4" style="max-width: 200px;">
+        <h3>No Results Found</h3>
+        <p class="text-muted">Try different keywords or browse our clubs and events.</p>
+        <div class="mt-4">
+            <a href="{% url 'club_list' %}" class="btn btn-primary me-2">Browse Clubs</a>
+            <a href="{% url 'event_list' %}" class="btn btn-outline-primary">View Events</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

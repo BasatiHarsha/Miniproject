@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load calendar_extras %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-3">Event Calendar</h1>
+        <p class="lead text-muted">Browse and register for upcoming events</p>
+        
+        <!-- Month Navigation -->
+        <div class="btn-group mb-4">
+            <a href="?month={{ prev_month|date:'Y-m' }}" class="btn btn-outline-primary">
+                <i class="fas fa-chevron-left me-1"></i>{{ prev_month|date:"F Y" }}
+            </a>
+            <a href="?month={{ next_month|date:'Y-m' }}" class="btn btn-outline-primary">
+                {{ next_month|date:"F Y" }}<i class="fas fa-chevron-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="h4 mb-0 text-center">{{ current_month|date:"F Y" }}</h3>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Calendar Grid -->
+                    <table class="table table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                {% for day in weekdays %}
+                                <th class="text-center">{{ day }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for week in calendar_weeks %}
+                            <tr>
+                                {% for day in week %}
+                                <td class="position-relative {% if day == 0 %}bg-light{% endif %}" style="height: 100px;">
+                                    {% if day != 0 %}
+                                    <div class="day-number">{{ day }}</div>
+                                    {% if day in events_by_day %}
+                                    <div class="events-list">
+                                        {% for event in events_by_day|get_item:day %}
+                                        <div class="event-item p-1 mb-1 rounded">
+                                            <a href="{% url 'event_detail' event.id %}" class="d-block text-decoration-none">
+                                                <small class="d-block text-truncate">{{ event.title }}</small>
+                                                <small class="text-muted">{{ event.date|date:"g:i A" }}</small>
+                                            </a>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Current Month Events List -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="h5 mb-0">{{ current_month|date:"F" }} Events</h4>
+                    <span class="badge bg-light text-primary">{{ current_month_events|length }} Events</span>
+                </div>
+                <div class="card-body">
+                    {% if current_month_events %}
+                        {% for event in current_month_events %}
+                            <div class="event-card mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="mb-2">{{ event.title }}</h5>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            {{ event.date|date:"l, F j" }}
+                                        </p>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-clock me-2"></i>
+                                            {{ event.date|date:"g:i A" }}
+                                        </p>
+                                        <p class="text-muted mb-3">
+                                            <i class="fas fa-map-marker-alt me-2"></i>
+                                            {{ event.location }}
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'event_detail' event.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-info-circle me-1"></i>Details
+                                            </a>
+                                            {% if not event.is_full %}
+                                            <form method="post" action="{% url 'register_event' event.id %}?next=calendar" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-check-circle me-1"></i>Register
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <img src="{% static 'img/no-events.svg' %}" alt="No events" style="width: 120px;" class="mb-3">
+                            <h5>No Events This Month</h5>
+                            <p class="text-muted">Check back later for upcoming events.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Month Events -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="h5 mb-0">{{ next_month|date:"F" }} Events</h4>
+                    <span class="badge bg-light text-primary">{{ next_month_events|length }} Events</span>
+                </div>
+                <div class="card-body">
+                    {% if next_month_events %}
+                        {% for event in next_month_events %}
+                            <div class="event-card mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="mb-2">{{ event.title }}</h5>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-calendar-alt me-2"></i>
+                                            {{ event.date|date:"l, F j" }}
+                                        </p>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-clock me-2"></i>
+                                            {{ event.date|date:"g:i A" }}
+                                        </p>
+                                        <p class="text-muted mb-3">
+                                            <i class="fas fa-map-marker-alt me-2"></i>
+                                            {{ event.location }}
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <a href="{% url 'event_detail' event.id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-info-circle me-1"></i>Details
+                                            </a>
+                                            {% if not event.is_full %}
+                                            <form method="post" action="{% url 'register_event' event.id %}?next=calendar" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-success btn-sm">
+                                                    <i class="fas fa-check-circle me-1"></i>Register
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <img src="{% static 'img/no-events.svg' %}" alt="No events" style="width: 120px;" class="mb-3">
+                            <h5>No Events Next Month</h5>
+                            <p class="text-muted">Check back later for upcoming events.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.day-number {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    font-weight: bold;
+    color: #666;
+}
+.events-list {
+    margin-top: 25px;
+    font-size: 0.8rem;
+}
+.event-item {
+    background-color: var(--background-off-white);
+    border: 1px solid var(--border-color);
+}
+.event-item:hover {
+    background-color: var(--background-light);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.event-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <style>
+        .st0{fill:currentColor;}
+        .st1{fill:currentColor;}
+    </style>
+    <circle class="st0" cx="100" cy="100" r="90"/>
+    <path class="st1" d="M100,50 v100 M50,100 h100" stroke-width="10" fill="none" stroke="currentColor"/>
+</svg>
